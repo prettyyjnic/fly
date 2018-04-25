@@ -3,6 +3,10 @@
 *.dll
 *.so
 *.dylib
+bin/fly
+bin/tmp
+.idea
+
 
 # Test binary, build with `go test -c`
 *.test
