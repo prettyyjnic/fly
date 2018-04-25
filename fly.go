@@ -15,6 +15,7 @@ import (
 	"strings"
 	"net/http/httputil"
 	"path"
+	"fmt"
 )
 
 const defaultPerm = os.FileMode(0755)
@@ -53,7 +54,7 @@ func (this *Fly) server() {
 	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		this.proxy(writer, request)
 	})
-
+	this.startTime = time.Now()
 	var err error
 	log.Println("服务启动", this.config.Address)
 	err = http.ListenAndServe(this.config.Address, nil) //设置监听的端口
@@ -71,13 +72,24 @@ func (this Fly) StatusHandle(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (this Fly) Get(ctx groupcache.Context, key string, dest groupcache.Sink) error {
-	filename := this.config.LocalCacheDir + strings.TrimLeft( key, "/")
+	if this.config.CacheExpireTime > 0 {
+		key = this.decodeCacheKey(key) // 去掉缓存
+	}
+	filename := this.config.LocalCacheDir + strings.TrimLeft(key, "/")
 	// 是否存在本地文件， 如果没有，则回源
 	isExist, err := pathExists(filename)
 	if err != nil {
 		return err
 	}
+	// 获取文件修改时间
+	modifyTime, err := getLastModifyTime(filename)
+	if err != nil {
+		return err
+	}
 	var bytesRead []byte
+	if time.Now().Sub(modifyTime) > time.Second*time.Duration(this.config.CacheExpireTime) {
+		goto Download
+	}
 	if isExist {
 		bytesRead, err = ioutil.ReadFile(filename)
 		if err != nil {
@@ -86,6 +98,7 @@ func (this Fly) Get(ctx groupcache.Context, key string, dest groupcache.Sink) er
 		dest.SetBytes(bytesRead)
 		return nil
 	}
+Download:
 	atomic.AddInt64(&this.state.Downloading, 1)
 	defer atomic.AddInt64(&this.state.Downloading, -1)
 	bytesRead, err = this.proxyGet(key)
@@ -129,9 +142,13 @@ Server:
 }
 func (this *Fly) staticProxy(writer http.ResponseWriter, request *http.Request) {
 	key := request.URL.Path
-	request.Host = this.originURL.Host//设置host，不然虚拟主机有bug
+	if this.config.CacheExpireTime > 0 {
+		key = this.genCacheKey(key)
+	}
+	request.Host = this.originURL.Host //设置host，不然虚拟主机有bug
 	var data []byte
 	var ctx groupcache.Context
+
 	err := this.globalCache.Get(ctx, key, groupcache.AllocatingByteSliceSink(&data))
 	if err != nil {
 		if httpError, ok := err.(HttpError); ok {
@@ -184,4 +201,29 @@ func pathExists(fpath string) (bool, error) {
 		return false, nil
 	}
 	return false, err
+}
+
+//生成缓存key
+func (this *Fly) genCacheKey(key string) string {
+	if this.config.CacheExpireTime == 0 {
+		return key
+	}
+	nowSeconds := int64(time.Now().Sub(this.startTime).Seconds())
+	return fmt.Sprintf("%d_%s", int64(nowSeconds/this.config.CacheExpireTime), key)
+}
+
+func (this *Fly) decodeCacheKey(key string) string {
+	pos := strings.IndexByte(key, '_') + 1
+	if pos == -1 {
+		return key
+	}
+	return key[pos:]
+}
+
+func getLastModifyTime(filename string) (time.Time, error) {
+	stat, err := os.Stat(filename)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return stat.ModTime(), nil
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/golang/groupcache"
 	"net/url"
 	"net/http/httputil"
+	"time"
 )
 
 type State struct {
@@ -23,7 +24,7 @@ func (e HttpError) Error() string {
 type Fly struct {
 	state  State
 	config Config
-
+	startTime time.Time
 	originURL      *url.URL
 	globalCache    *groupcache.Group
 	dynamic        *httputil.ReverseProxy
