@@ -5,9 +5,9 @@ import (
 	"github.com/prettyyjnic/fly"
 	"os"
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
 	"strconv"
+	"github.com/pkg/errors"
 )
 
 var version string = "v0.0.1"
