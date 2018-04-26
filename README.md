@@ -3,6 +3,9 @@
 2. 使用 groupcache 进行缓存加速
 3. 可配置缓存时间
 
+## 测试站（mirror google服务）：
+http://104.168.29.165:9090
+
 ## 使用
 `cd bin && mkdir tmp && godep restore && govvv build fly.go && ./fly http://example.com/`
 

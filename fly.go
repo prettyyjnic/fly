@@ -81,16 +81,17 @@ func (this Fly) Get(ctx groupcache.Context, key string, dest groupcache.Sink) er
 	if err != nil {
 		return err
 	}
-	// 获取文件修改时间
-	modifyTime, err := getLastModifyTime(filename)
-	if err != nil {
-		return err
-	}
 	var bytesRead []byte
-	if time.Now().Sub(modifyTime) > time.Second*time.Duration(this.config.CacheExpireTime) {
-		goto Download
-	}
+
 	if isExist {
+		// 获取文件修改时间
+		modifyTime, err := getLastModifyTime(filename)
+		if err != nil {
+			return err
+		}
+		if time.Now().Sub(modifyTime) > time.Second*time.Duration(this.config.CacheExpireTime) {
+			goto Download
+		}
 		bytesRead, err = ioutil.ReadFile(filename)
 		if err != nil {
 			return err
@@ -119,10 +120,14 @@ func (this *Fly) proxy(writer http.ResponseWriter, request *http.Request) {
 	var isDynamic bool = true
 	fpath := request.URL.Path
 	if strings.ToLower(request.Method) == "get" { // 不是get方法的
-		if fpath[len(fpath)-1] == '/' { // "/" 结尾的视为动态
+		if fpath == "/" || fpath[len(fpath)-1] == '/' { // "/" 结尾的视为动态
 			goto Server
 		}
-		ext := path.Ext(fpath)[1:]
+		ext := path.Ext(fpath)
+		if len(ext) <= 0 {
+			goto Server
+		}
+		ext = ext[1:]
 		for i := 0; i < len(this.proxySuffixArr); i++ {
 			if ext == this.proxySuffixArr[i] { // 后缀名符合
 				isDynamic = false
