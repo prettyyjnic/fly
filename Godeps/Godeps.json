@@ -1,0 +1,31 @@
+{
+	"ImportPath": "github.com/prettyyjnic/fly",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/golang/groupcache",
+			"Rev": "66deaeb636dff1ac7d938ce666d090556056a4b0"
+		},
+		{
+			"ImportPath": "github.com/golang/groupcache/consistenthash",
+			"Rev": "66deaeb636dff1ac7d938ce666d090556056a4b0"
+		},
+		{
+			"ImportPath": "github.com/golang/groupcache/groupcachepb",
+			"Rev": "66deaeb636dff1ac7d938ce666d090556056a4b0"
+		},
+		{
+			"ImportPath": "github.com/golang/groupcache/lru",
+			"Rev": "66deaeb636dff1ac7d938ce666d090556056a4b0"
+		},
+		{
+			"ImportPath": "github.com/golang/groupcache/singleflight",
+			"Rev": "66deaeb636dff1ac7d938ce666d090556056a4b0"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+		}
+	]
+}

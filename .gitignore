@@ -6,7 +6,7 @@
 bin/fly
 bin/tmp
 .idea
-
+vendor
 
 # Test binary, build with `go test -c`
 *.test

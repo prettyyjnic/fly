@@ -4,10 +4,14 @@
 3. 可配置缓存时间
 
 ## 使用
-`cd bin && mkdir tmp && govvv build fly.go && ./fly http://example.com/`
+`cd bin && mkdir tmp && godep restore && govvv build fly.go && ./fly http://example.com/`
 
 ## 没有govvv
 `go get github.com/ahmetb/govvv`
+
+## 没有godep
+`go get github.com/tools/godep`
+
 
 ```
 Usage:
