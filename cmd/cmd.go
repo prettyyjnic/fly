@@ -10,8 +10,7 @@ import (
 	"strconv"
 )
 
-const VERSION = 1.0
-
+var version string = "v0.0.1"
 var config fly.Config
 var maxMemCache string
 var cacheExpireTime string
@@ -83,7 +82,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of orcworker",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(VERSION)
+		fmt.Println(version)
 	},
 }
 
@@ -99,7 +98,8 @@ func init() {
 	rootCmd.Flags().StringVarP(&cacheExpireTime, "CacheExpireTime", "e", "0", "缓存过期时间,0为永不过期，单位：s,m,h,d, 例如: 1h")
 }
 
-func Execute() {
+func Execute(ver string ) {
+	version = ver
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
